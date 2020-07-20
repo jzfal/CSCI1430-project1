@@ -104,3 +104,6 @@ plt.figure()
 plt.imshow(high_pass_image)
 plt.show()
 done = save_image(resultsDir + os.sep + 'high_pass_image.jpg', high_pass_image)
+
+
+

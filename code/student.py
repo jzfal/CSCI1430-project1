@@ -6,6 +6,7 @@ import numpy as np
 from numpy import pi, exp, sqrt
 from skimage import io, img_as_ubyte, img_as_float32
 from skimage.transform import rescale
+import matplotlib.pyplot as plt
 
 def my_imfilter(image, kernel):
     """
@@ -21,11 +22,83 @@ def my_imfilter(image, kernel):
     Errors if:
     - filter/kernel has any even dimension -> raise an Exception with a suitable error message.
     """
-    filtered_image = np.zeros(image.shape)
+    filtered_image = np.zeros(image.shape) # pad the border with zeros
+
+    # inspiration for code coming from https://www.allaboutcircuits.com/technical-articles/two-dimensional-convolution-in-image-processing/
 
     ##################
     # Your code here #
-    print('my_imfilter function in student.py needs to be implemented')
+    # check for even dimension 
+    # print([[x%2==0 for x in image.shape],[x%2==0 for x in kernel.shape]])
+    if any([x%2==0 for x in image.shape] + [x%2==0 for x in kernel.shape]):
+        raise Exception("Dimensions cannot be even, np.shape must return non-even shape")
+    else:
+        # no need to pad
+        # run imfilter
+        # will resize the image according to the kernal/mask
+        # change the inputs to raster matrices
+        new_kernel = np.flip(kernel) # flip the kernel 
+        # need to zero pad the input image
+        # the formula for padding is the number of rows or columns to be zero padded on each side of the input image is given by (number of rows or columns in the kernel-1)
+
+        row_pads = new_kernel.shape[0]-1
+        col_pads = new_kernel.shape[1]-1
+        
+        if len(image.shape) == 3: # for color images
+            image_padded = np.zeros(shape = (row_pads*2 + image.shape[0], col_pads*2 + image.shape[1], 3))
+            if col_pads == 0 and row_pads == 0:
+                image_padded[:,:,:] = image
+            elif col_pads == 0:
+                image_padded[row_pads:-row_pads,:,:] = image
+            elif row_pads == 0:
+                image_padded[:,col_pads:-col_pads,:] = image
+            else:
+                image_padded[row_pads:-row_pads,col_pads:-col_pads,:] = image
+        else:
+            if col_pads == 0 and row_pads == 0:
+                image_padded[:,:] = image
+            elif col_pads == 0:
+                image_padded[row_pads:-row_pads,:] = image
+            elif row_pads == 0:
+                image_padded[:,col_pads:-col_pads] = image
+            else:
+                image_padded[row_pads:-row_pads,col_pads:-col_pads] = image
+        # plt.imshow(image_padded)
+        # print(image == image_padded)
+        # plt.imshow(image_padded)
+        # plt.show()
+        # return
+
+
+
+
+        if len(image.shape) == 3: # for color images # can do a break if rank is 2
+            for i in range(3):# for rgb
+                # the pads depend on the size of the kernel
+                # the size of the border depends on the kernel size, if 3 == 1, 5 == 2 and so on, number of rows indicate the top and bottom border, number of cols indicate the left and right border
+                # num_row_iter = image.shape[0] - new_kernel.shape[0]
+                for j in range(filtered_image.shape[0]): # this is the range over the rows (number of rows in output matrix)
+                    # num_col_iter = image.shape[1] - new_kernel.shape[1]
+                    for k in range(filtered_image.shape[1]):
+                        # need to find the starting point for the col and row
+                        # new_kernel[j + num_col_iter/2]
+
+                        filtered_image[j,k,i] = np.sum(image_padded[j:j+row_pads+1, k:k+col_pads+1, i] * new_kernel) # dot product
+        else:
+            for j in range(filtered_image.shape[0]): # this is the range over the rows (number of rows in output matrix)
+                # num_col_iter = image.shape[1] - new_kernel.shape[1]
+                for k in range(filtered_image.shape[1]):
+                    # need to find the starting point for the col and row
+                    # new_kernel[j + num_col_iter/2]
+                    filtered_image[j,k] = np.sum(image_padded[j:j+row_pads+1, k:k+col_pads+1] * new_kernel) # dot product
+
+                    
+
+
+
+
+
+    # print('my_imfilter function in student.py needs to be implemented')
     ##################
 
     return filtered_image
